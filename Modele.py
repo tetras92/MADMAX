@@ -45,7 +45,6 @@ class Modele:
 
 
     def nearest_alternative_to_I(self, weight_file="weights_file.csv", epsilon=0.1):
-        self.E = self.A.keys()  #Reconsideration de l'ensemble des alternatives
         self.compute_I_and_N()
         self.upload_criteria_weight(weight_file=weight_file)
         #--- CALCUL DU VECTEUR LAMBDA ---#
@@ -85,6 +84,7 @@ class Modele:
             self.V_P = {f : float(value) for f,value in self.V_P.items()}
 
     def nearest_alternative_to_V_P(self, weight_file="weights_file.csv", performance_file="performance_cible.csv", epsilon=0.1):
+        self.E = self.A.keys()  #Reconsideration de l'ensemble des alternatives
         self.upload_performance_vector(file=performance_file)
         print(self.V_P)
         self.compute_I_and_N()
@@ -109,7 +109,7 @@ class Modele:
 
                 L.append((modele, max_value + epsilon * noise_expr))
         L.sort(key=lambda c: c[1])
-        print(L)
+        print(self.X_star)
         self.PP = L[0][0]  #solution la plus proche du vecteur de performance fourni
         print(self.A[self.PP])
         return L[0]
