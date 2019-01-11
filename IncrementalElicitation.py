@@ -8,7 +8,7 @@ class CSS_Solver():
         self.A = dict()  # dictionnaire des points alternatives
         self.D_IdToMod = dict() # dictionnaire str -> int associant un entier a un nom de modele
         self.D_IdToCrit = dict() # dictionnaire str -> int associant un entier a un critere
-        self.MMR_value = list()
+        self.MMR_values = list()
         self.DM_W = None
         self.GurobiModel = None
         self.var_w = list()
@@ -115,7 +115,7 @@ class CSS_Solver():
             self.GurobiModel.update()
             D_MR_yj[i] = (MR_x_i, j_star)
 
-        #determiner MMR et donc la question à poser
+        #determiner MMR et donc la question a poser
         query_tuple = None
         MMR_value = None
         for i, MR_jStar in D_MR_yj.items():
@@ -123,6 +123,7 @@ class CSS_Solver():
             if query_tuple == None or query_tuple[0] < MR_i:
                 MMR_value = MR_i
                 query_tuple = (i, j_star)
+        self.MMR_values.append(MMR_value)
         return query_tuple
 
     def update_model_with_query(self, query):
@@ -138,8 +139,13 @@ class CSS_Solver():
         self.GurobiModel.update()
 
 
+    def start(self):
+        self.initialization()
+        while len(self.MMR_values) == 0 or self.MMR_values[-1] != 0:
+            self.update_model_with_query(self.query())
+        print(self.MMR_values)
 
 
 if __name__ == '__main__':
     m = CSS_Solver('voitures.csv')
-    m.initialization()
+    m.start()
