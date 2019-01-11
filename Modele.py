@@ -116,9 +116,11 @@ class Modele:
 
 if __name__ == '__main__':
     m = Modele('voitures.csv')
-    print("Ensemble des alternatives", m.E)
+    m.compute_I_and_N()
+    print(m.I, m.N)
+    # print("Ensemble des alternatives", m.E)
     # print(m.nearest_alternative_to_I(weight_file="weights_file.csv", epsilon=0.1))
     # m.set_criteria_to_improve(criteria="cv")
     # print("Ensemble des alternatives", m.E)
     # print(m.nearest_alternative_to_I(weight_file="weights_file.csv", epsilon=0.1))
-    print(m.nearest_alternative_to_V_P())
+    # print(m.nearest_alternative_to_V_P())
