@@ -83,7 +83,60 @@ class CSS_Solver():
 
 
     def query(self):
-        pass
+        D_MR_yj = dict()               # dictionnnaire associant a chaque alternative i sa valeur MR et l'indice de son adversaire le pire
+
+        for i in range(len(self.D_IdToMod)) :
+            var_lambda = self.GurobiModel.addVar(vtype=GRB.CONTINUOUS, lb=-GRB.INFINITY, name="lambda")
+            self.GurobiModel.update()
+            L_of_constraints_i = list()
+            D_of_constraints_expr = dict()
+            for j in range(len(self.D_IdToMod)):
+                if (i != j):
+                    #C_max_i_j : contraite de type Lambda >= f(x_i) - f(y_j)
+                    C_max_i_j = LinExpr()
+                    #f_x_i
+                    f_x_i = quicksum(self.M_Points[i,k] * self.var_w[k] for k in range(len(self.L_criteres)))
+                    f_y_j = quicksum(self.M_Points[j,k] * self.var_w[k] for k in range(len(self.L_criteres)))
+                    C_max_i_j = var_lambda - f_x_i - f_y_j
+                    D_of_constraints_expr[j] = C_max_i_j
+                    L_of_constraints_i.append(self.GurobiModel.addConstr(C_max_i_j >= 0))
+                    self.GurobiModel.update()
+            self.GurobiModel.setObjective(var_lambda, GRB.MINIMIZE)
+            self.GurobiModel.update()
+            self.GurobiModel.optimize()
+            MR_x_i = self.GurobiModel.objVal
+            # j_star : indice du pire adversaire de i
+            for j in D_of_constraints_expr:
+                if D_of_constraints_expr[j].getValue() == MR_x_i:
+                    j_star = j
+            for constraint in L_of_constraints_i:
+                self.GurobiModel.remove(constraint)
+            self.GurobiModel.remove(var_lambda)
+            self.GurobiModel.update()
+            D_MR_yj[i] = (MR_x_i, j_star)
+
+        #determiner MMR et donc la question à poser
+        query_tuple = None
+        MMR_value = None
+        for i, MR_jStar in D_MR_yj.items():
+            MR_i, j_star = MR_jStar
+            if query_tuple == None or query_tuple[0] < MR_i:
+                MMR_value = MR_i
+                query_tuple = (i, j_star)
+        return query_tuple
+
+    def update_model_with_query(self, query):
+        i, j = query
+        f_x_i = sum([self.M_Points[i, k]*self.DM_W[k] for k in range(len(self.L_criteres))])
+        f_x_j = sum([self.M_Points[j, k]*self.DM_W[k] for k in range(len(self.L_criteres))])
+        f_x_i_expr = quicksum(self.M_Points[i,k] * self.var_w[k] for k in range(len(self.L_criteres)))
+        f_y_j_expr = quicksum(self.M_Points[j,k] * self.var_w[k] for k in range(len(self.L_criteres)))
+        if f_x_i <= f_x_j :
+            self.GurobiModel.addConstr(f_x_i_expr - f_y_j_expr <= 0)
+        else:
+            self.GurobiModel.addConstr(f_y_j_expr - f_x_i_expr <= 0)
+        self.GurobiModel.update()
+
 
 
 
