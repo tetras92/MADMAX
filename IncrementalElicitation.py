@@ -13,6 +13,7 @@ class CSS_Solver():
         self.GurobiModel = None
         self.var_w = list()
 
+        self.f = 1
 
         with open(fichier_alternatives) as csvfile:
             base_lignes_alternatives = csv.DictReader(csvfile, delimiter=',')
@@ -39,7 +40,7 @@ class CSS_Solver():
 
         print("ideal", self.i)
         print("nadir", self.n)
-        print(self.M_Points)
+        # print(self.M_Points)
 
 
     def ideal(self):
@@ -75,6 +76,7 @@ class CSS_Solver():
             self.DM_W = [float(W[criteria]) for criteria in self.L_criteres]
             #Verification si strictement positifs et somme a 1
         self.GurobiModel = Model("MADMC")
+        self.GurobiModel.setParam( 'OutputFlag', False)
         self.var_w = [self.GurobiModel.addVar(vtype=GRB.CONTINUOUS, lb=0, name="w_%d"%num) for num in range(len(self.L_criteres))]
         self.GurobiModel.update()
         c1 = quicksum([w for w in self.var_w])  #contrainte c1 : sum{w_i} = 1
@@ -90,25 +92,34 @@ class CSS_Solver():
             self.GurobiModel.update()
             L_of_constraints_i = list()
             D_of_constraints_expr = dict()
+            # print("nb of constraints before adding lambda constr" , len(self.GurobiModel.getConstrs()))
             for j in range(len(self.D_IdToMod)):
                 if (i != j):
                     #C_max_i_j : contraite de type Lambda >= f(x_i) - f(y_j)
-                    C_max_i_j = LinExpr()
                     #f_x_i
                     f_x_i = quicksum(self.M_Points[i,k] * self.var_w[k] for k in range(len(self.L_criteres)))
                     f_y_j = quicksum(self.M_Points[j,k] * self.var_w[k] for k in range(len(self.L_criteres)))
-                    C_max_i_j = var_lambda - f_x_i - f_y_j
+                    C_max_i_j = var_lambda - f_x_i + f_y_j
                     D_of_constraints_expr[j] = C_max_i_j
                     L_of_constraints_i.append(self.GurobiModel.addConstr(C_max_i_j >= 0))
                     self.GurobiModel.update()
             self.GurobiModel.setObjective(var_lambda, GRB.MINIMIZE)
             self.GurobiModel.update()
             self.GurobiModel.optimize()
+            # self.GurobiModel.write("file_"+str(self.f)+".lp")
+            self.f += 1
             MR_x_i = self.GurobiModel.objVal
+            # print("MR_x_i", MR_x_i)
             # j_star : indice du pire adversaire de i
+            nb_exp = 0
+            plus_faible_valeur = None
             for j in D_of_constraints_expr:
-                if D_of_constraints_expr[j].getValue() == MR_x_i:
+                # print(D_of_constraints_expr[j].getValue())
+                if plus_faible_valeur == None or abs(D_of_constraints_expr[j].getValue()) < plus_faible_valeur:
+                    plus_faible_valeur = abs(D_of_constraints_expr[j].getValue())
+                    nb_exp += 1
                     j_star = j
+            # print("nb_expr", nb_exp)
             for constraint in L_of_constraints_i:
                 self.GurobiModel.remove(constraint)
             self.GurobiModel.remove(var_lambda)
@@ -120,9 +131,10 @@ class CSS_Solver():
         MMR_value = None
         for i, MR_jStar in D_MR_yj.items():
             MR_i, j_star = MR_jStar
-            if query_tuple == None or query_tuple[0] < MR_i:
+            if query_tuple == None or query_tuple[0] > MR_i:
                 MMR_value = MR_i
                 query_tuple = (i, j_star)
+        print("Minimax Regret ", MMR_value)
         self.MMR_values.append(MMR_value)
         return query_tuple
 
@@ -133,19 +145,43 @@ class CSS_Solver():
         f_x_i_expr = quicksum(self.M_Points[i,k] * self.var_w[k] for k in range(len(self.L_criteres)))
         f_y_j_expr = quicksum(self.M_Points[j,k] * self.var_w[k] for k in range(len(self.L_criteres)))
         if f_x_i <= f_x_j :
-            self.GurobiModel.addConstr(f_x_i_expr - f_y_j_expr <= 0)
+            cst = self.GurobiModel.addConstr(f_x_i_expr - f_y_j_expr <= 0)
+            self.GurobiModel.update()
+            print(cst)
+            print("DM prefers ", self.D_IdToMod[i])
         else:
-            self.GurobiModel.addConstr(f_y_j_expr - f_x_i_expr <= 0)
-        self.GurobiModel.update()
+            cst= self.GurobiModel.addConstr(f_y_j_expr - f_x_i_expr <= 0)
+            self.GurobiModel.update()
+            print(cst)
+            print("DM prefers ", self.D_IdToMod[j])
 
+
+
+    def DM_preference(self):
+        i_star = None
+        value_of_i_star = None
+        for i in range(len(self.D_IdToMod)):
+            f_i = sum([self.M_Points[i, k]*self.DM_W[k] for k in range(len(self.L_criteres))])
+            # print(self.D_IdToMod[i], f_i)
+            if i_star == None or f_i < value_of_i_star:
+                i_star = i
+                value_of_i_star = f_i
+        print("DM preferences using weights", self.D_IdToMod[i_star], value_of_i_star)
+        return i_star
 
     def start(self):
+        nb = 0
         self.initialization()
-        while len(self.MMR_values) == 0 or self.MMR_values[-1] != 0:
-            self.update_model_with_query(self.query())
-        print(self.MMR_values)
+        while len(self.MMR_values) == 0 or nb < 5:
+            nb += 1
+            query = self.query()
+            print ("==============Query==============", self.D_IdToMod[query[0]], "VS", self.D_IdToMod[query[1]])
+            self.update_model_with_query(query)
+
+            # print("============================MMR_values===========================================", self.MMR_values)
 
 
 if __name__ == '__main__':
     m = CSS_Solver('voitures.csv')
     m.start()
+    m.DM_preference()
