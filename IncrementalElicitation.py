@@ -224,4 +224,5 @@ class CSS_Solver():
 if __name__ == '__main__':
     m = CSS_Solver('voitures.csv')
     m.start()
+
     m.DM_preference()
