@@ -112,33 +112,24 @@ class CSS_Solver():
                         L_of_constraints_i.append(self.GurobiModel.addConstr(C_max_i_j >= 0))
                         self.GurobiModel.update()
                 obj = quicksum(l_j for l_j in D_var_lambda_j.values())
-                obj -= var_lambda
+                # obj -= var_lambda
                 self.GurobiModel.setObjective(obj, GRB.MAXIMIZE)
                 self.GurobiModel.update()
                 self.GurobiModel.optimize()
-                # self.GurobiModel.write("file_"+str(self.f)+".lp")
-                # for i in range(len(self.L_criteres)):
-                #     print("w_{} = {}".format(i, self.var_w[i].x))
-                # self.f += 1
-                MR_x_i = var_lambda.x
-                if MR_x_i == 0:
-                    for i_ in range(len(self.L_criteres)):
-                        self.elicitated_w[0,i_] = self.var_w[i_].x
-                # print("MR_x_i", MR_x_i)
-                # j_star : indice du pire adversaire de i
+
+                PMR_L = [l_j.x for l_j in D_var_lambda_j.values()]
+                PMR_max = max(PMR_L)
                 nb_exp = 0
                 L_j_star = list()
-                for j, var_lambda_i_j in D_var_lambda_j.items():
-                    # print(D_of_constraints_expr[j].getValue())
-                    if MR_x_i == var_lambda_i_j.x:
-                        # print("i", self.D_IdToMod[i], "j", self.D_IdToMod[j])
-                        nb_exp += 1
-                        # j_star = j
+                for j, var_lj in D_var_lambda_j.items():
+                    if PMR_max == var_lj.x:
                         L_j_star.append(j)
+                        nb_exp += 1
+                if (nb_exp > 1):
+                    print("Not unique for =====> ",self.D_IdToMod[i])
 
-                        # if (nb_exp > 1):
-                        #     print("Not unique =====> ",self.D_IdToMod[i])
-                # print("nb_expr", nb_exp)
+                MR_x_i = PMR_max
+
                 for constraint in L_of_constraints_i:
                     self.GurobiModel.remove(constraint)
                 for j, var_lambda_i_j in D_var_lambda_j.items():
@@ -223,6 +214,7 @@ class CSS_Solver():
         self.best_alternative_elicitated()
 if __name__ == '__main__':
     m = CSS_Solver('voitures.csv')
+    m.DM_preference()
     m.start()
 
-    m.DM_preference()
+
