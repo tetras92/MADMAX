@@ -37,7 +37,7 @@ print("IDEAL", I)
 #-----------------------------------------------------------------------#
 #---CALCUL DE LA SOLUTION LA PLUS PROCHE DU POINT IDEAL DANS LA DIRECTION DU POINT NADIR---#
 W = dict() #dictionnaire des poids de criteres
-with open('weights_file.csv') as csvfile:
+with open('weight_file.csv') as csvfile:
     ligne_poids = csv.DictReader(csvfile, delimiter=',')
     W = ligne_poids.next()
     W = {f : float(value) for f,value in W.items()}
