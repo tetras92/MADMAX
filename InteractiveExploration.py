@@ -1,5 +1,7 @@
 import csv
 import numpy as np
+
+
 class Modele:
     def __init__(self, fichier_alternatives):
         self.A = dict()                    # dictionnaire des points alternatives
@@ -124,7 +126,7 @@ class Modele:
             ligne_poids = csv.DictReader(csvfile, delimiter=',')
             W = ligne_poids.next()
             self.DM_W = np.array([float(W[criteria]) for criteria in self.L_criteres])
-
+        print("\t{}\n\t{}".format(self.L_criteres, self.DM_W))
         self.DM_prefered_alternative = None
         val_min = None
         for i in range(len(self.D_IdToMod)):
@@ -143,16 +145,16 @@ class Modele:
             if dif[i] > max_value:
                 max_value = dif[i]
                 criteria_id = i
-        print("\t{} {} is to high for DM !\n\n".format(self.M_Points[self.current_proposition, criteria_id],
+        print("\t{} {} is to high for DM !\n".format(self.M_Points[self.current_proposition, criteria_id],
                                                    self.L_criteres[criteria_id]))
         return criteria_id
 
-    def start_exploration(self):
+    def start_exploration(self, epsilon=0.1):
         self.upload_criteria_weight()
         self.upload_DM_weight_preference()
 
         while True:
-            self.nearest_point_id()
+            self.nearest_point_id(epsilon=epsilon)
 
             if self.current_proposition == self.DM_prefered_alternative:
                 print("Exploration stopped : DM preference found!!!")
