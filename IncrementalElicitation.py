@@ -5,17 +5,14 @@ from gurobipy import *
 class CSS_Solver():
 
     def __init__(self, fichier_alternatives):
-        self.A = dict()  # dictionnaire des points alternatives
-        self.D_IdToMod = dict() # dictionnaire str -> int associant un entier a un nom de modele
-        self.D_IdToCrit = dict() # dictionnaire str -> int associant un entier a un critere
-        self.MMR_values = list()
-        self.DM_W = None
+        self.A = dict()                    # dictionnaire des points alternatives
+        self.D_IdToMod = dict()            # dictionnaire str -> int associant un entier a un nom de modele
+        self.D_IdToCrit = dict()           # dictionnaire str -> int associant un entier a un critere
+        self.MMR_values = list()           # Liste des MMR Valeurs calculees
+        self.DM_W = None                   # vecteur de poids decrivant les preferences du decideur
         self.GurobiModel = None
-        self.var_w = list()
+        self.var_w = list()                # liste des variables poids a eliciter
 
-        self.non_needed_alternative = set()
-        self.elicitated_w = None
-        self.f = 1
 
         with open(fichier_alternatives) as csvfile:
             base_lignes_alternatives = csv.DictReader(csvfile, delimiter=',')
@@ -25,7 +22,6 @@ class CSS_Solver():
             print(L_criteres)
             nb_criteres = len(L_criteres)
             self.M_Points = np.zeros((0, nb_criteres))
-            self.elicitated_w = np.zeros((1, nb_criteres))
             self.D_IdToCrit = {i : L_criteres[i] for i in range(nb_criteres)}
             nb_alternatives = 0
             for ligne_alternative in base_lignes_alternatives:

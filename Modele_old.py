@@ -44,7 +44,7 @@ class Modele:
             self.W = {f : float(value) for f,value in self.W.items()}
 
 
-    def nearest_alternative_to_I(self, weight_file="weights_file.csv", epsilon=0.1):
+    def nearest_alternative_to_I(self, weight_file="weight_file.csv", epsilon=0.1):
         self.compute_I_and_N()
         self.upload_criteria_weight(weight_file=weight_file)
         #--- CALCUL DU VECTEUR LAMBDA ---#
@@ -83,7 +83,7 @@ class Modele:
             self.V_P = ligne_performance.next()
             self.V_P = {f : float(value) for f,value in self.V_P.items()}
 
-    def nearest_alternative_to_V_P(self, weight_file="weights_file.csv", performance_file="performance_cible.csv", epsilon=0.1):
+    def nearest_alternative_to_V_P(self, weight_file="weight_file.csv", performance_file="performance_cible.csv", epsilon=0.1):
         self.E = self.A.keys()  #Reconsideration de l'ensemble des alternatives
         self.upload_performance_vector(file=performance_file)
         print(self.V_P)
@@ -116,11 +116,11 @@ class Modele:
 
 if __name__ == '__main__':
     m = Modele('voitures.csv')
-    m.compute_I_and_N()
-    print(m.I, m.N)
+    # m.compute_I_and_N()
+    # print(m.I, m.N)
     # print("Ensemble des alternatives", m.E)
-    # print(m.nearest_alternative_to_I(weight_file="weights_file.csv", epsilon=0.1))
+    print(m.nearest_alternative_to_I(weight_file="weight_file.csv", epsilon=0.1))
     # m.set_criteria_to_improve(criteria="cv")
     # print("Ensemble des alternatives", m.E)
-    # print(m.nearest_alternative_to_I(weight_file="weights_file.csv", epsilon=0.1))
+    # print(m.nearest_alternative_to_I(weight_file="weight_file.csv", epsilon=0.1))
     # print(m.nearest_alternative_to_V_P())
