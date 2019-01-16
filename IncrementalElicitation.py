@@ -216,6 +216,8 @@ class CSS_Solver():
         plt.plot([i for i in range(1, len(self.MMR_values)+1)], self.MMR_values)
         plt.title("MMR values")
         plt.show()
+
+
         return nb                                                                                                # juste pour Q2a
 
 
