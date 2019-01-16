@@ -1,0 +1,89 @@
+    def best_alternatives_elicitated(self):
+        L_evaluations = list()
+        for i in range(len(self.D_IdToMod)):
+            point_i = self.M_Points[i,:]
+            obj = quicksum(point_i[k]*self.var_w[k] for k in range(len(self.L_criteres)))
+            self.GurobiModel.setObjective(obj, GRB.MINIMIZE)
+            self.GurobiModel.update()
+            self.GurobiModel.optimize()
+            L_evaluations.append(self.GurobiModel.objVal)
+
+
+        f_min = min(L_evaluations)
+        print(L_evaluations)
+        S_i_p = {self.D_IdToMod[i_p] for i_p in range(len(L_evaluations)) if L_evaluations[i_p] == f_min}     #surtout pas mettre obVal
+                                                                                                                # a cause des sensibilites
+                                                                                                            #float gurobi et float python apres evaluation
+        print(S_i_p)
+
+        # print (self.D_IdToMod[i_p], objVal)
+        return S_i_p #self.D_IdToMod[i_p]
+
+    # def best_alternatives_elicitated(self):
+    #     L_Var_x = list()
+    #     L_f_expr_x = list()
+    #     for i in range(len(self.D_IdToMod)):
+    #         point_i = self.M_Points[i,:]
+    #         L_Var_x.append(self.GurobiModel.addVar(vtype=GRB.BINARY, name="x_%d"%i))
+    #         L_f_expr_x.append(quicksum(point_i[k]*self.var_w[k] for k in range(len(self.L_criteres))))
+    #         self.GurobiModel.update()
+    #     cst = self.GurobiModel.addConstr(quicksum(x for x in L_Var_x) == 1)
+    #     self.GurobiModel.update()
+    #     obj = quicksum(L_Var_x[i]*L_f_expr_x[i] for i in range(len(L_f_expr_x)))
+    #     self.GurobiModel.update()
+    #     self.GurobiModel.setObjective(obj, GRB.MINIMIZE)
+    #     self.GurobiModel.optimize()
+    #     objVal = self.GurobiModel.objVal
+    #     i_p = None
+    #     for i in range(len(self.D_IdToMod)):
+    #         if L_Var_x[i].x == 1:
+    #             i_p = i
+    #     pg = 9
+    #     pg_vec = self.M_Points[pg, :]
+    #     print("value for peugeot ", sum([pg_vec[k] * self.var_w[k].x for k in range(len(self.L_criteres))]))
+    #     #retirer cst et les variables x
+    #     self.GurobiModel.remove(cst)
+    #     for x in L_Var_x:
+    #         self.GurobiModel.remove(x)
+    #     self.GurobiModel.update()
+    #
+    #     print (self.D_IdToMod[i_p], objVal)
+    #     return self.D_IdToMod[i_p]
+
+
+# def best_alternatives_elicitated(self):
+#     var_val_min = self.GurobiModel.addVar(vtype=GRB.CONTINUOUS, lb=-GRB.INFINITY, name="lambda")
+#     L_contextual_constraints = list()
+#     for i in range(len(self.D_IdToMod)):
+#         point_i = self.M_Points[i,:]
+#         c_c = quicksum(point_i[k]*self.var_w[k] for k in range(len(self.L_criteres)))
+#         L_contextual_constraints.append(self.GurobiModel.addConstr(var_val_min <= c_c))
+#         self.GurobiModel.update()
+#
+#     obj = var_val_min
+#     self.GurobiModel.update()
+#     self.GurobiModel.setObjective(obj, GRB.MAXIMIZE)
+#     self.GurobiModel.optimize()
+#     objVal = self.GurobiModel.objVal
+#
+#     L_evaluations = list()
+#     for i in range(len(self.D_IdToMod)):
+#         L_evaluations.append(sum([self.M_Points[i,k] * self.var_w[k].x for k in range(len(self.L_criteres))]))
+#
+#     f_min = min(L_evaluations)
+#     print(L_evaluations)
+#     S_i_p = {self.D_IdToMod[i_p] for i_p in range(len(L_evaluations)) if L_evaluations[i_p] == f_min}     #surtout pas mettre obVal
+#                                                                                                             # a cause des sensibilites
+#                                                                                                         #float gurobi et float python apres evaluation
+#     print(S_i_p)
+#
+#
+#     #retirer cst et les variables x
+#     self.GurobiModel.remove(var_val_min)
+#     self.GurobiModel.update()
+#     for c_c in L_contextual_constraints:
+#         self.GurobiModel.remove(c_c)
+#     self.GurobiModel.update()
+#
+#     # print (self.D_IdToMod[i_p], objVal)
+#     return S_i_p #self.D_IdToMod[i_p]

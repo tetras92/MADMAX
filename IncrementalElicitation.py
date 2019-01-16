@@ -1,6 +1,8 @@
 import csv
 import numpy as np
 from gurobipy import *
+import matplotlib.pyplot as plt
+from sklearn import preprocessing
 
 class CSS_Solver():
 
@@ -35,12 +37,26 @@ class CSS_Solver():
         self.i = self.ideal()
         self.n = self.nadir()
         dif_n_i = self.n - self.i
+        # print(self.M_Points)
         self.M_Points = self.M_Points / dif_n_i        #NORMALISATION PAR L'ECART NADIR - IDEAL
 
-        print("ideal", self.i)
-        print("nadir", self.n)
-        # print(self.M_Points)
+        # print("ideal", self.i)
+        # print("nadir", self.n)
+        # print(self.D_IdToMod)
 
+
+    def generate_DM_random_vector(self):
+        v = np.random.random_sample((len(self.L_criteres),))
+        sum_ = np.sum(v)
+        v /= sum_
+        for i in range(len(self.L_criteres)):
+            v[i] = round(v[i], 3)
+        if np.sum(v) != 1.:
+            v[0] = 1 - np.sum(v[1:])
+        while np.sum(v) != 1.:
+            return self.generate_DM_random_vector()
+        # print("random vector generated !!!")
+        return v
 
     def ideal(self):
         I = [min(self.M_Points[:,j]) for j in range(len(self.D_IdToCrit))]
@@ -69,11 +85,19 @@ class CSS_Solver():
 
 
     def initialization(self, UnknownDMAgregationFunctionFile='DM_weights_file.csv'):
+        print("\n\nUploading DM linear agregation function from {} ...".format(UnknownDMAgregationFunctionFile))
         with open(UnknownDMAgregationFunctionFile) as csvfile:
             ligne_poids = csv.DictReader(csvfile, delimiter=',')
             W = ligne_poids.next()
             self.DM_W = [float(W[criteria]) for criteria in self.L_criteres]
+
+
+        # modification des poids du decideur pour mesure du nombre de questions
+        self.DM_W = self.generate_DM_random_vector()                                    # juste pour Q2a
+
+
             #Verification si strictement positifs et somme a 1
+        print("\t{}\n\t{}".format(self.L_criteres, self.DM_W))
         self.GurobiModel = Model("MADMC")
         self.GurobiModel.setParam( 'OutputFlag', False)
         self.var_w = [self.GurobiModel.addVar(vtype=GRB.CONTINUOUS, lb=0, name="w_%d"%num) for num in range(len(self.L_criteres))]
@@ -100,27 +124,44 @@ class CSS_Solver():
 
 
             # j_star : indice du pire adversaire de i
+            L_j_star = list()
             L_PMR_i_j.sort(key=lambda c : c[0], reverse=True)
             MR_i , j_star = L_PMR_i_j[0]
+            L_j_star.append(j_star)
+            it = 1
+            while it < len(L_PMR_i_j) and L_PMR_i_j[it][0] == MR_i:
+                L_j_star.append(L_PMR_i_j[it][1])
+                it += 1
+
             # if MR_i > L_PMR_i_j[1][0]:
             #     print("===>>Unique")
             # elif MR_i == L_PMR_i_j[1][0]:
-            #     print("===>not Unique")
+            #
+            #     print("===>not Unique {}".format(self.D_IdToMod[i]))
 
-            D_MR_yj[i] = (MR_i, j_star)
+            D_MR_yj[i] = (MR_i, L_j_star)
 
         #determiner MMR et donc la question a poser
         query_tuple = None
         MMR_value = None
 
         for i, MR_jStar in D_MR_yj.items():
-            MR_i, j_star = MR_jStar
+            MR_i, L_j_star = MR_jStar
             if query_tuple == None or MMR_value > MR_i:
                 MMR_value = MR_i
-                query_tuple = (i, j_star)
+                query_tuple = (i, L_j_star)
+        nb_ = 0
+        for i, MR_jStar in D_MR_yj.items():
+            MR_i, L_j_star = MR_jStar
+            if MR_i == MMR_value:
+                nb_ += 1
 
-        print("Minimax Regret ", MMR_value)
-        self.MMR_values.append(MMR_value)
+        print("Minimax Regret alternative : {} [{}]".format(self.D_IdToMod[query_tuple[0]], round(MMR_value,3)))
+
+        if nb_ > 1:
+            print("=============================> At least 2 MMR")
+
+        self.MMR_values.append(round(MMR_value,3))
         return query_tuple
 
     def update_model_with_query(self, query):
@@ -133,13 +174,13 @@ class CSS_Solver():
         if f_x_i <= f_x_j :
             self.GurobiModel.addConstr(f_x_i_expr - f_y_j_expr <= 0)
             self.GurobiModel.update()
-            print("DM prefers ", self.D_IdToMod[i], "to", self.D_IdToMod[j])
+            print("\t\t  DM prefers {} to {}".format(self.D_IdToMod[i], self.D_IdToMod[j]))
         else:
             self.GurobiModel.addConstr(f_y_j_expr - f_x_i_expr <= 0)
             self.GurobiModel.update()
-            print("DM prefers ", self.D_IdToMod[j], "to", self.D_IdToMod[i])
+            print("\t\t  DM prefers {} to {}".format(self.D_IdToMod[j], self.D_IdToMod[i]))
 
-        print("Contraint(s) added!\n\n")
+        print("\t\t  Constraint added!\n\n")
 
     def DM_preference(self):
         i_star = None
@@ -150,56 +191,62 @@ class CSS_Solver():
             if i_star == None or f_i < value_of_i_star:
                 i_star = i
                 value_of_i_star = f_i
-        print("DM preferences using weights", self.D_IdToMod[i_star], value_of_i_star)
+        print("\tDM preferences using weights : {}".format(self.D_IdToMod[i_star]))
         return self.D_IdToMod[i_star]
-
-    def best_alternative_elicitated(self):
-        L_Var_x = list()
-        L_f_expr_x = list()
-        for i in range(len(self.D_IdToMod)):
-            point_i = self.M_Points[i,:]
-            L_Var_x.append(self.GurobiModel.addVar(vtype=GRB.BINARY, name="x_%d"%i))
-            L_f_expr_x.append(quicksum(point_i[k]*self.var_w[k] for k in range(len(self.L_criteres))))
-            self.GurobiModel.update()
-        cst = self.GurobiModel.addConstr(quicksum(x for x in L_Var_x) == 1)
-        self.GurobiModel.update()
-        obj = quicksum(L_Var_x[i]*L_f_expr_x[i] for i in range(len(L_f_expr_x)))
-        self.GurobiModel.update()
-        self.GurobiModel.setObjective(obj, GRB.MINIMIZE)
-        self.GurobiModel.optimize()
-        i_p = None
-        for i in range(len(self.D_IdToMod)):
-            if L_Var_x[i].x == 1:
-                i_p = i
-        #retirer cst et les variables x
-        self.GurobiModel.remove(cst)
-        for x in L_Var_x:
-            self.GurobiModel.remove(x)
-        self.GurobiModel.update()
-
-        return self.D_IdToMod[i_p]
 
 
     def start(self):
         nb = 0
         self.initialization()
         DM_preference_alternative = self.DM_preference()
-        while len(self.MMR_values) == 0 or self.best_alternative_elicitated() != DM_preference_alternative:
-            nb += 1
-            query = self.query()
-            print ("==============Query==============", query)
-            self.update_model_with_query(query)
+        print("================= ELICITATION STARTS! =================")
+        while len(self.MMR_values) == 0 or self.MMR_values[-1] >= 0.001: #DM_preference_alternative not in self.best_alternatives_elicitated():
 
-            # print("============================MMR_values===========================================", self.MMR_values)
-        print(self.MMR_values)
-        self.best_alternative_elicitated()
+            query = self.query()
+            x, L_j = query
+            for x_ in L_j:
+                print ("\t\t==============Query==============\n\t\t  {} vs. {}".format(self.D_IdToMod[x], self.D_IdToMod[x_]))
+                self.update_model_with_query((x, x_))
+                nb += 1
+
+        print("================= ELICITATION STOPS! =================")
+        print("DM alternative elicitated : {}".format(DM_preference_alternative))
+        print("Number of queries : {}".format(nb))
+        print("MMR values evolution : {}".format(self.MMR_values))
+        plt.plot([i for i in range(1, len(self.MMR_values)+1)], self.MMR_values)
+        plt.title("MMR values")
+        plt.show()
+        return nb                                                                                                # juste pour Q2a
 
 
 
 if __name__ == '__main__':
 
-    m = CSS_Solver('voitures.csv')
-    m.start()
-    m.DM_preference()
-    print(m.best_alternative_elicitated())
+    # m = CSS_Solver('voitures.csv')
+    # m.start()
+
+    N = list()
+    for i in range(5):
+        m = CSS_Solver('voitures.csv')
+        nb = m.start()
+        N.append(nb)
+    print(N)
+
+    L = [len([1 for n in N if i == n]) for i in range(0, max(N)+1)]
+    L = [(1.*n)/sum(L) for n in L]
+    print(L)
+
+    # L = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.4, 0.4, 0.0, 0.0, 0.0, 0.0, 0.2]
+    # N = [i for i in range(0, len(L))]
+    bins = [i for i in range(0, len(L))]
+    plt.bar(bins, L)
+
+    plt.xlabel("Nombre de questions")
+    plt.ylabel("Frequence d'observations")
+    plt.title("Freq. d'obs. du nombre de quest. sur {} essais realises".format(50))
+    plt.savefig("figure.png")
+    plt.show()
+    # m.DM_preference()
+    # print(m.best_alternative_elicitated())
+
 
