@@ -2,7 +2,7 @@ import csv
 import numpy as np
 from gurobipy import *
 import matplotlib.pyplot as plt
-from sklearn import preprocessing
+import random
 
 class CSS_Solver():
 
@@ -53,6 +53,9 @@ class CSS_Solver():
             v[i] = round(v[i], 3)
         if np.sum(v) != 1.:
             v[0] = 1 - np.sum(v[1:])
+        for i in range(len(self.L_criteres)):
+            if v[i] == 0:
+                return self.generate_DM_random_vector()
         while np.sum(v) != 1.:
             return self.generate_DM_random_vector()
         # print("random vector generated !!!")
@@ -93,14 +96,15 @@ class CSS_Solver():
 
 
         # modification des poids du decideur pour mesure du nombre de questions
-        self.DM_W = self.generate_DM_random_vector()                                    # juste pour Q2a
+        # self.DM_W = self.generate_DM_random_vector()                                    # juste pour Q2a
 
-
-            #Verification si strictement positifs et somme a 1
         print("\t{}\n\t{}".format(self.L_criteres, self.DM_W))
         self.GurobiModel = Model("MADMC")
         self.GurobiModel.setParam( 'OutputFlag', False)
         self.var_w = [self.GurobiModel.addVar(vtype=GRB.CONTINUOUS, lb=0, name="w_%d"%num) for num in range(len(self.L_criteres))]
+        self.GurobiModel.update()
+        for w in self.var_w:
+            self.GurobiModel.addConstr(w > 0)
         self.GurobiModel.update()
         c1 = quicksum([w for w in self.var_w])  #contrainte c1 : sum{w_i} = 1
         self.GurobiModel.addConstr(c1 == 1)
@@ -125,19 +129,13 @@ class CSS_Solver():
 
             # j_star : indice du pire adversaire de i
             L_j_star = list()
-            L_PMR_i_j.sort(key=lambda c : c[0], reverse=True)
+            L_PMR_i_j.sort(key=lambda c : c[0], reverse=True)       #ordre decroissant
             MR_i , j_star = L_PMR_i_j[0]
             L_j_star.append(j_star)
             it = 1
             while it < len(L_PMR_i_j) and L_PMR_i_j[it][0] == MR_i:
                 L_j_star.append(L_PMR_i_j[it][1])
                 it += 1
-
-            # if MR_i > L_PMR_i_j[1][0]:
-            #     print("===>>Unique")
-            # elif MR_i == L_PMR_i_j[1][0]:
-            #
-            #     print("===>not Unique {}".format(self.D_IdToMod[i]))
 
             D_MR_yj[i] = (MR_i, L_j_star)
 
@@ -164,6 +162,9 @@ class CSS_Solver():
         self.MMR_values.append(round(MMR_value,3))
         return query_tuple
 
+
+
+
     def update_model_with_query(self, query):
         i, j = query
         # for j in L_j:
@@ -180,7 +181,7 @@ class CSS_Solver():
             self.GurobiModel.update()
             print("\t\t  DM prefers {} to {}".format(self.D_IdToMod[j], self.D_IdToMod[i]))
 
-        print("\t\t  Constraint added!\n\n")
+        print("\t\t  Constraint added!")
 
     def DM_preference(self):
         i_star = None
@@ -200,7 +201,7 @@ class CSS_Solver():
         self.initialization()
         DM_preference_alternative = self.DM_preference()
         print("================= ELICITATION STARTS! =================")
-        while len(self.MMR_values) == 0 or self.MMR_values[-1] >= 0.001: #DM_preference_alternative not in self.best_alternatives_elicitated():
+        while len(self.MMR_values) == 0 or self.MMR_values[-1] >= 0.0000001:
 
             query = self.query()
             x, L_j = query
@@ -214,41 +215,13 @@ class CSS_Solver():
         print("Number of queries : {}".format(nb))
         print("MMR values evolution : {}".format(self.MMR_values))
         plt.plot([i for i in range(1, len(self.MMR_values)+1)], self.MMR_values)
-        plt.title("MMR values")
+        plt.title("MMR values\n{}\n{}\n{}".format(self.L_criteres, self.DM_W, DM_preference_alternative))
         plt.show()
-
-
-        return nb                                                                                                # juste pour Q2a
+        # return nb                                                                                                # juste pour Q2a
 
 
 
 if __name__ == '__main__':
 
-    # m = CSS_Solver('voitures.csv')
-    # m.start()
-
-    N = list()
-    for i in range(5):
-        m = CSS_Solver('voitures.csv')
-        nb = m.start()
-        N.append(nb)
-    print(N)
-
-    L = [len([1 for n in N if i == n]) for i in range(0, max(N)+1)]
-    L = [(1.*n)/sum(L) for n in L]
-    print(L)
-
-    # L = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.4, 0.4, 0.0, 0.0, 0.0, 0.0, 0.2]
-    # N = [i for i in range(0, len(L))]
-    bins = [i for i in range(0, len(L))]
-    plt.bar(bins, L)
-
-    plt.xlabel("Nombre de questions")
-    plt.ylabel("Frequence d'observations")
-    plt.title("Freq. d'obs. du nombre de quest. sur {} essais realises".format(50))
-    plt.savefig("figure.png")
-    plt.show()
-    # m.DM_preference()
-    # print(m.best_alternative_elicitated())
-
-
+    m = CSS_Solver('voitures.csv')
+    m.start()

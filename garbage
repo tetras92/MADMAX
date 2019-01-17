@@ -87,3 +87,58 @@
 #
 #     # print (self.D_IdToMod[i_p], objVal)
 #     return S_i_p #self.D_IdToMod[i_p]
+
+
+self.L_random_queries = list()
+        for i in range(len(self.D_IdToMod)):
+            for j in range(len(self.D_IdToMod)):
+                if i < j:
+                    self.L_random_queries.append((i, list([j])))
+        random.shuffle(self.L_random_queries)
+
+
+def random_query(self):
+        return self.L_random_queries.pop()
+
+# CADILLAC = [0.466, 0.463, 0.16, 0.061, 0.058, 0.038, 0.037, 0.034, 0.021, 0.006, 0.004, 0.0] #[0.094 0.308 0.383 0.147 0.017 0.051]
+# MERCEDES_A45 = [0.466, 0.463, 0.293, 0.156, 0.066, 0.049, 0.037, 0.036, 0.032, 0.027, 0.007, 0.0] #[0.131 0.207 0.125 0.255 0.058 0.224]
+# BMW_M5 = [0.466, 0.463, 0.16, 0.047, 0.017, 0.003, 0.0] #[0.272 0.26  0.056 0.075 0.198 0.139]
+# PEUGEOT_208_TI = [0.466, 0.227, 0.099, 0.066, 0.044, 0.037, 0.034, 0.021, 0.018, 0.016, 0.015, 0.007, 0.004, 0.003, 0.002, 0.001, 0.0] #[0.27  0.144 0.143 0.33  0.11  0.003]
+# SEAT_LEON_FR = [0.466, 0.227, 0.075, 0.069, 0.047, 0.044, 0.034, 0.017, 0.012, 0.005, 0.002, 0.0] # [0.303 0.005 0.125 0.269 0.271 0.027]
+#
+# z, = plt.plot([i for i in range(18)], [0 for i in range(18)], color="black")
+# c, = plt.plot([i for i in range(len(CADILLAC))], CADILLAC, color="grey")
+# m, =plt.plot([i for i in range(len(MERCEDES_A45))], MERCEDES_A45, color="blue")
+# b, = plt.plot([i for i in range(len(BMW_M5))], BMW_M5, color="red", label="[0.272 0.26  0.056 0.075 0.198 0.139]")
+# p, = plt.plot([i for i in range(len(PEUGEOT_208_TI))], PEUGEOT_208_TI, color="green", label="[0.27  0.144 0.143 0.33  0.11  0.003]")
+# s, = plt.plot([i for i in range(len(SEAT_LEON_FR))], SEAT_LEON_FR, color="yellow", label="[0.303 0.005 0.125 0.269 0.271 0.027]")
+# plt.legend([z, c, m, b, p, s], ["co, cv, eu, kg, nm, sc","[0.094 0.308 0.383 0.147 0.017 0.051]", "[0.131 0.207 0.125 0.255 0.058 0.224]", "[0.272 0.26  0.056 0.075 0.198 0.139]",
+#                              "[0.27  0.144 0.143 0.33  0.11  0.003]", "[0.303 0.005 0.125 0.269 0.271 0.027]"], loc = 'upper right',  markerscale = 100, frameon = False, fontsize = 10)
+# plt.title("Variation du regret minimax pour differents vecteurs poids")
+# plt.show()
+
+
+ # nb_tests = 30
+    # N = list()
+    # for i in range(nb_tests):
+    #     m = CSS_Solver('voitures.csv')
+    #     nb = m.start()
+    #     N.append(nb)
+    # print(N)
+    #
+    # L = [len([1 for n in N if i == n]) for i in range(0, max(N)+1)]
+    # L = [(1.*n)/sum(L) for n in L]
+    # print(L)
+    #
+    # # L = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.4, 0.4, 0.0, 0.0, 0.0, 0.0, 0.2]
+    # # N = [i for i in range(0, len(L))]
+    # bins = [i for i in range(0, len(L))]
+    # plt.bar(bins, L)
+    #
+    # plt.xlabel("Nombre de questions")
+    # plt.ylabel("Frequence d'observations")
+    # plt.title("Freq. d'obs. du nombre de quest. sur {} essais realises".format(nb_tests))
+    # plt.savefig("figure.png")
+    # plt.show()
+    # m.DM_preference()
+    # print(m.best_alternative_elicitated())
