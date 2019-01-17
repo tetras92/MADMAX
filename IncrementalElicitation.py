@@ -37,12 +37,8 @@ class CSS_Solver():
         self.i = self.ideal()
         self.n = self.nadir()
         dif_n_i = self.n - self.i
-        # print(self.M_Points)
         self.M_Points = self.M_Points / dif_n_i        #NORMALISATION PAR L'ECART NADIR - IDEAL
 
-        # print("ideal", self.i)
-        # print("nadir", self.n)
-        # print(self.D_IdToMod)
 
 
     def generate_DM_random_vector(self):
@@ -94,9 +90,6 @@ class CSS_Solver():
             W = ligne_poids.next()
             self.DM_W = [float(W[criteria]) for criteria in self.L_criteres]
 
-
-        # modification des poids du decideur pour mesure du nombre de questions
-        # self.DM_W = self.generate_DM_random_vector()                                    # juste pour Q2a
 
         print("\t{}\n\t{}".format(self.L_criteres, self.DM_W))
         self.GurobiModel = Model("MADMC")

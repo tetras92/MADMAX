@@ -175,5 +175,5 @@ class Modele:
 
 if __name__ == '__main__':
     m = Modele('voitures.csv')
-    # m.start_exploration()
-    m.nearest_alternative_to_a_reference_point()
+    m.start_exploration()
+    # m.nearest_alternative_to_a_reference_point()
