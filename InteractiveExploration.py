@@ -31,7 +31,8 @@ class Modele:
 
         # print(self.M_Points)
         self.compute_ideal_nadir()
-
+        # print("ideal", self.i)
+        # print("nadir", self.n)
 
         self.Still_available_alternatives = {i for i in range(len(self.D_IdToMod))}
         self.current_proposition = None                 # proposition courante
@@ -78,11 +79,12 @@ class Modele:
         L = list()
         sum_ = 0                 # second membre  partie augmentee de la norme de Tchebycheff
         for i in range(len(self.L_criteres)):
-            d_i = self.W[i] * (self.M_Points[point_id, i] - reference_point[i]) / self.dif_n_i[i]
-            sum_ += d_i
-            L.append(d_i)
-
-        # print(L)
+            if self.dif_n_i[i] != 0. :
+                d_i = self.W[i] * (self.M_Points[point_id, i] - reference_point[i]) / self.dif_n_i[i]
+                sum_ += d_i
+                L.append(d_i)
+        # print("voiture", self.D_IdToMod[point_id])
+        # print("max", L, max(L), "sum", sum_)
         return max(L) + epsilon * sum_
 
 
@@ -106,12 +108,15 @@ class Modele:
         value_of_this_criteria_in_current_opt = self.M_Points[self.current_proposition][criteria_id]
         # rappel : minimization
         self.Still_available_alternatives = {i for i in self.Still_available_alternatives if self.M_Points[i, criteria_id] < value_of_this_criteria_in_current_opt}
+        print("alternatives restantes ", {self.D_IdToMod[k] for k in self.Still_available_alternatives})
         #maj des points
         for i in range(len(self.D_IdToMod)):
             if i not in self.Still_available_alternatives:
                 for k in range(len(self.L_criteres)):
                     self.M_Points[i, k] = float("inf")
         self.compute_ideal_nadir()
+        # print("ideal", self.i)
+        # print("nadir", self.n)
 
     def compute_ideal_nadir(self):
         self.i = self.ideal()
@@ -174,6 +179,7 @@ class Modele:
         return n_p
 
 if __name__ == '__main__':
+    # m = Modele('voitures_3critere.csv')
     m = Modele('voitures.csv')
-    m.start_exploration()
+    m.start_exploration(epsilon=0.9)
     # m.nearest_alternative_to_a_reference_point()
