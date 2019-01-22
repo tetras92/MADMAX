@@ -166,7 +166,7 @@ class Modele:
                 return
 
             criteria_to_improve = self.criteria_to_improve()
-            self.set_criteria_to_improve(criteria_to_improve)
+            self.set_criteria_to_improve(criteria_id=criteria_to_improve)
 
     def nearest_alternative_to_a_reference_point(self, weight_file="weight_file.csv", performance_file="performance_cible.csv", epsilon=0.1):
         self.upload_criteria_weight(weight_file)

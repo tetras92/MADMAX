@@ -142,3 +142,25 @@ def random_query(self):
     # plt.show()
     # m.DM_preference()
     # print(m.best_alternative_elicitated())
+
+
+nombre d'apparitions
+AUDI RS3 : 1
+CADILLAC : 38
+BMW M1401 : 16
+MERCEDES A45 : 22
+PEUGEOT 308 GTI : 2
+VOLKSWAGEN GOLF GTE : 1
+BMW M5 : 10
+PEUGEOT 208 GTI : 7
+ABARTH 595 : 3
+nb moyen de questions pour trouver
+AUDI RS3 : [11] [11.0]
+CADILLAC : [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12] [12.0]
+BMW M1401 : [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 11, 12, 12, 12, 12, 12] [11.9375]
+MERCEDES A45 : [12, 12, 12, 12, 12, 12, 12, 12, 11, 12, 12, 12, 12, 12, 12, 9, 12, 12, 12, 12, 12, 12] [11.8181818182]
+PEUGEOT 308 GTI : [10, 13] [11.5]
+VOLKSWAGEN GOLF GTE : [12] [12.0]
+BMW M5 : [7, 8, 7, 8, 8, 8, 8, 7, 8, 7] [7.6]
+PEUGEOT 208 GTI : [13, 13, 17, 17, 17, 13, 13] [14.7142857143]
+ABARTH 595 : [14, 14, 14] [14.0]
