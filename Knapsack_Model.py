@@ -229,7 +229,7 @@ class Knapsack_Model():
 
         while True:
             self.nearest_point_to_I()
-            print(("Proposition to DM : {} \n\t{}\n\t{}").format(list(self.OPT[1]),self.L_criteres,list(self.OPT[0])))
+            print(("Proposition to DM : {}  ( {} / {} ) \n\t{}\n\t{}").format(list(self.OPT[1]),sum([ self.Weight[i] for i in self.OPT[1]]), self.capacity, self.L_criteres,list(self.OPT[0])))
             if self.OPT[1] == self.DM_prefered_alternative[1]:
                 print("Exploration stopped : DM preference found!!!")
                 # print("OPT DONE ",self.OPT)
@@ -307,11 +307,11 @@ if __name__ == '__main__':
     Knapsack_Model.generate_knapsack_instance(2, 10)
     knapsack = Knapsack_Model("knapsack_instance.csv")
 
-    # knapsack.start_exploration()
+    knapsack.start_exploration()
 
-    alter = knapsack.nearest_alternative_to_a_reference_point(performance_file="performance_cible_knapsack_2.csv")
-    print("Nearest alternative to a reference point {} : \n\t Panier : {} \n\tSolution {}".format(knapsack.I,list(alter[1]),alter[0]))
-    #
+    # alter = knapsack.nearest_alternative_to_a_reference_point(performance_file="performance_cible_knapsack_2.csv")
+    # print("Nearest alternative to a reference point {} : \n\t Panier : {} \n\tSolution {}".format(knapsack.I,list(alter[1]),alter[0]))
+
 
 
 
