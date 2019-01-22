@@ -38,11 +38,12 @@ class CSS_Solver():
         self.n = self.nadir()
         dif_n_i = self.n - self.i
         self.M_Points = self.M_Points / dif_n_i        #NORMALISATION PAR L'ECART NADIR - IDEAL
-        self.Allqueries = list()
-        for q1 in range(len(self.D_IdToMod)):
-            for q2 in range(q1+1, len(self.D_IdToMod)):
-                self.Allqueries.append((q1, list([q2])))
-        random.shuffle(self.Allqueries)
+        # FOR RANDOM QUERY
+        # self.Allqueries = list()
+        # for q1 in range(len(self.D_IdToMod)):
+        #     for q2 in range(q1+1, len(self.D_IdToMod)):
+        #         self.Allqueries.append((q1, list([q2])))
+        # random.shuffle(self.Allqueries)
 
 
     def generate_DM_random_vector(self):
@@ -158,7 +159,7 @@ class CSS_Solver():
             print("=============================> At least 2 MMR")
 
         self.MMR_values.append(round(MMR_value,3))
-        query_tuple = self.Allqueries.pop(0)
+        # query_tuple = self.Allqueries.pop(0)                             #random query
         return query_tuple
 
 
@@ -216,28 +217,11 @@ class CSS_Solver():
         plt.plot([i for i in range(1, len(self.MMR_values)+1)], self.MMR_values)
         plt.title("MMR values\n{}\n{}\n{}".format(self.L_criteres, self.DM_W, DM_preference_alternative))
         plt.show()
-        return nb, DM_preference_alternative                                                                                           # juste pour Q2a
+        # return nb, DM_preference_alternative                                                                                           # juste pour Q2a
 
 
 
 if __name__ == '__main__':
     m = CSS_Solver('voitures.csv')
-    nb, A = m.start()
-    #
-    # D_nb = dict()
-    # D_q = dict()
-    # for i in range(100):
-    #     m = CSS_Solver('voitures.csv')
-    #     nb, A = m.start()
-    #     if A not in D_nb:
-    #         D_nb[A] = 0
-    #         D_q[A] = list()
-    #     D_nb[A] += 1
-    #     D_q[A].append(nb)
-    # print(D_nb, D_q)
-    # print("nombre d'apparitions")
-    # for modele, nb in D_nb.items():
-    #     print("{} : {}".format(modele, nb))
-    # print("nb moyen de questions pour trouver")
-    # for modele, L in D_q.items():
-    #     print(("{} : {} [{}]".format(modele, L, 1.*sum(L)/len(L))))
+    m.start()
+
