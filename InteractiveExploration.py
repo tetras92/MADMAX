@@ -181,5 +181,5 @@ class Modele:
 if __name__ == '__main__':
     # m = Modele('voitures_3critere.csv')
     m = Modele('voitures.csv')
-    m.start_exploration(epsilon=0.9)
+    m.start_exploration(epsilon=0.1)
     # m.nearest_alternative_to_a_reference_point()
