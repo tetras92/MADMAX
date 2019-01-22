@@ -246,7 +246,7 @@ class Knapsack_Model():
             P = ligne_performance.next()
             reference_point = [int(P[criteria]) for criteria in self.L_criteres]
 
-        print("ref point ",reference_point)
+        print("Reference point ",reference_point)
         self.initialize_I_N_X_star()
         self.compute_I_and_N_once()
         self.first_Initilization_Model()
@@ -307,11 +307,11 @@ if __name__ == '__main__':
     Knapsack_Model.generate_knapsack_instance(2, 10)
     knapsack = Knapsack_Model("knapsack_instance.csv")
 
-    knapsack.start_exploration()
+    # knapsack.start_exploration()
 
     alter = knapsack.nearest_alternative_to_a_reference_point(performance_file="performance_cible_knapsack_2.csv")
     print("Nearest alternative to a reference point {} : \n\t Panier : {} \n\tSolution {}".format(knapsack.I,list(alter[1]),alter[0]))
-
+    #
 
 
 
