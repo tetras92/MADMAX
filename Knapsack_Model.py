@@ -218,13 +218,14 @@ class Knapsack_Model():
         # self.OPT[0] = self.GurobiModel.objVal
         self.OPT[0] = np.array([ sum([self.U[i][j] for i in self.OPT[1] ]) for j in range(self.n_criteria)])
         # print("OPT ",self.OPT)
+        return self.OPT
 
-    def start_exploration(self):
+    def start_exploration(self,dm_file="DM_weights_file_knapsack_2.csv"):
         # self.upload_criteria_weight()
         self.initialize_I_N_X_star()
         self.compute_I_and_N_once()
         self.first_Initilization_Model()
-        self.upload_DM_weight_preference()
+        self.upload_DM_weight_preference(dm_file)
 
         while True:
             self.nearest_point_to_I()
@@ -238,14 +239,18 @@ class Knapsack_Model():
             self.set_criteria_to_improve(criteria_to_improve)
 
 
-    def nearest_alternative_to_a_reference_point(self, weight_file="weight_file.csv", performance_file="performance_cible_knapsack.csv", epsilon=0.1):
+    def nearest_alternative_to_a_reference_point(self, weight_file="weight_file.csv", performance_file="performance_cible_knapsack_2.csv", epsilon=0.1):
         # self.upload_criteria_weight(weight_file)
         with open(performance_file) as csvfile:
             ligne_performance = csv.DictReader(csvfile, delimiter=',')
             P = ligne_performance.next()
             reference_point = [int(P[criteria]) for criteria in self.L_criteres]
 
-        # n_p = self.nearest_point_to_I(reference_point=reference_point, epsilon=epsilon)
+        print("ref point ",reference_point)
+        self.initialize_I_N_X_star()
+        self.compute_I_and_N_once()
+        self.first_Initilization_Model()
+        n_p = self.nearest_point_to_I(reference_point=reference_point, epsilon=epsilon)
         return n_p
 
 
@@ -298,21 +303,22 @@ def test_random_instances():
 
 if __name__ == '__main__':
 
-    # Knapsack_Model.generate_knapsack_instance(100, 100000)
-    # knapsack = Knapsack_Model("knapsack_instance.csv")
-    #
-    # t1 = time.time()
-    # knapsack.initialize_I_N_X_star()
-    # knapsack.compute_I_and_N_once()
-    # knapsack.first_Initilization_Model()
-    # knapsack.nearest_point_to_I()
-    # print("TIME ",time.time() - t1)
-
-    # test_random_instances()
-
 
     Knapsack_Model.generate_knapsack_instance(2, 10)
     knapsack = Knapsack_Model("knapsack_instance.csv")
+
     knapsack.start_exploration()
 
+    alter = knapsack.nearest_alternative_to_a_reference_point(performance_file="performance_cible_knapsack_2.csv")
+    print("Nearest alternative to a reference point {} : \n\t Panier : {} \n\tSolution {}".format(knapsack.I,list(alter[1]),alter[0]))
 
+
+
+
+    # Knapsack_Model.generate_knapsack_instance(5, 10)
+    # knapsack = Knapsack_Model("knapsack_instance.csv")
+
+    # knapsack.start_exploration(dm_file="DM_weights_file_knapsack_5.csv")
+
+    # alter = knapsack.nearest_alternative_to_a_reference_point(performance_file="performance_cible_knapsack_5.csv")
+    # print("Nearest alternative to a reference point {} : \n\t Panier : {} \n\tSolution {}".format(knapsack.I,list(alter[1]),alter[0]))

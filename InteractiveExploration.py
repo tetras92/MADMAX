@@ -108,7 +108,7 @@ class Modele:
         value_of_this_criteria_in_current_opt = self.M_Points[self.current_proposition][criteria_id]
         # rappel : minimization
         self.Still_available_alternatives = {i for i in self.Still_available_alternatives if self.M_Points[i, criteria_id] < value_of_this_criteria_in_current_opt}
-        print("alternatives restantes ", {self.D_IdToMod[k] for k in self.Still_available_alternatives})
+        # print("alternatives restantes ", {self.D_IdToMod[k] for k in self.Still_available_alternatives})
         #maj des points
         for i in range(len(self.D_IdToMod)):
             if i not in self.Still_available_alternatives:
@@ -179,7 +179,6 @@ class Modele:
         return n_p
 
 if __name__ == '__main__':
-    # m = Modele('voitures_3critere.csv')
     m = Modele('voitures.csv')
     m.start_exploration(epsilon=0.1)
     # m.nearest_alternative_to_a_reference_point()
