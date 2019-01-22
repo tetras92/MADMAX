@@ -79,7 +79,9 @@ class CSS_Solver():
                         if B[k]:
                             nb_dominated_criteria += 1
                     if nb_dominated_criteria == len(self.D_IdToCrit):
+                        # print("{} dominated by {}".format(self.D_IdToMod[i1], self.D_IdToMod[i2]))
                         Non_Pareto_Points_id.add(i1)
+        # print({self.D_IdToMod[m] for m in Non_Pareto_Points_id})
         Pareto_Points_id = {i for i in range(len(self.D_IdToMod))} - Non_Pareto_Points_id
         M_Pareto_Points = np.zeros((0, len(self.D_IdToCrit)))
         for i in Pareto_Points_id:
@@ -111,7 +113,7 @@ class CSS_Solver():
 
 
     def query(self):
-        D_MR_yj = dict()               # dictionnnaire associant a chaque alternative i sa valeur MR et l'indice de son adversaire le pire
+        D_MR_yj = dict()               # dictionnnaire associant a chaque alternative i sa valeur MR et la liste des indices de ses adversaires les pires
 
         for i in range(len(self.D_IdToMod)):
             L_PMR_i_j = list()
